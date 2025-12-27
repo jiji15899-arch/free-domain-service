@@ -4,442 +4,100 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>무료 도메인 발급 서비스</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div id="root"></div>
-    
-    <script type="text/babel">
-        const { useState, useEffect } = React;
-        
-        function FreeDomainService() {
-            const [formData, setFormData] = useState({
-                subdomain: '',
-                extension: '.com',
-                ns1: '',
-                ns2: '',
-                email: ''
-            });
-            
-            const [status, setStatus] = useState({ type: '', message: '' });
-            const [domains, setDomains] = useState([]);
-            const [showInstructions, setShowInstructions] = useState(false);
-            const [loading, setLoading] = useState(false);
+    <div class="container">
+        <header>
+            <h1>🌐 무료 도메인 발급</h1>
+            <p>원하는 서브도메인을 무료로, 영구적으로 사용하세요</p>
+        </header>
 
-            const extensions = [
-                '.com',
-                '.net',
-                '.org',
-                '.co.kr',
-                '.io'
-            ];
-
-            useEffect(() => {
-                const saved = localStorage.getItem('registeredDomains');
-                if (saved) {
-                    try {
-                        setDomains(JSON.parse(saved));
-                    } catch (e) {
-                        console.error('로컬 스토리지 파싱 오류:', e);
-                    }
-                }
-            }, []);
-
-            const handleInputChange = (e) => {
-                const { name, value } = e.target;
-                setFormData(prev => ({ ...prev, [name]: value }));
-            };
-
-            const validateForm = () => {
-                if (!formData.subdomain.match(/^[a-z0-9-]+$/)) {
-                    setStatus({
-                        type: 'error',
-                        message: '도메인은 영문 소문자, 숫자, 하이픈(-)만 사용 가능합니다.'
-                    });
-                    return false;
-                }
-                
-                if (formData.subdomain.length < 3) {
-                    setStatus({
-                        type: 'error',
-                        message: '도메인은 최소 3자 이상이어야 합니다.'
-                    });
-                    return false;
-                }
-                
-                if (!formData.ns1 || !formData.ns2) {
-                    setStatus({
-                        type: 'error',
-                        message: '네임서버 1과 2를 모두 입력해주세요.'
-                    });
-                    return false;
-                }
-                
-                if (!formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-                    setStatus({
-                        type: 'error',
-                        message: '올바른 이메일 주소를 입력해주세요.'
-                    });
-                    return false;
-                }
-                
-                const fullDomain = formData.subdomain + formData.extension;
-                if (domains.find(d => d.domain === fullDomain)) {
-                    setStatus({
-                        type: 'error',
-                        message: '이미 사용 중인 도메인입니다.'
-                    });
-                    return false;
-                }
-                
-                return true;
-            };
-
-            const handleSubmit = async () => {
-                if (!validateForm()) return;
-                
-                setLoading(true);
-                setStatus({ type: 'loading', message: '도메인 등록 중... 잠시만 기다려주세요.' });
-                
-                try {
-                    console.log('API 요청 시작:', formData);
-                    
-                    const response = await fetch('/api/register-domain', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify(formData)
-                    });
-                    
-                    console.log('응답 상태:', response.status);
-                    console.log('응답 헤더:', response.headers);
-                    
-                    // 응답 텍스트 먼저 확인
-                    const responseText = await response.text();
-                    console.log('응답 원본 텍스트:', responseText);
-                    
-                    // 빈 응답 체크
-                    if (!responseText) {
-                        throw new Error('서버로부터 응답이 없습니다. Functions 설정을 확인해주세요.');
-                    }
-                    
-                    // JSON 파싱 시도
-                    let result;
-                    try {
-                        result = JSON.parse(responseText);
-                    } catch (parseError) {
-                        console.error('JSON 파싱 오류:', parseError);
-                        throw new Error(`잘못된 응답 형식입니다: ${responseText.substring(0, 100)}`);
-                    }
-                    
-                    console.log('파싱된 결과:', result);
-                    
-                    if (result.success) {
-                        const newDomain = {
-                            domain: result.domain,
-                            ns1: formData.ns1,
-                            ns2: formData.ns2,
-                            email: formData.email,
-                            createdAt: new Date().toISOString(),
-                            status: 'active',
-                            ns1RecordId: result.ns1RecordId,
-                            ns2RecordId: result.ns2RecordId
-                        };
-                        
-                        const updatedDomains = [...domains, newDomain];
-                        setDomains(updatedDomains);
-                        localStorage.setItem('registeredDomains', JSON.stringify(updatedDomains));
-                        
-                        setStatus({
-                            type: 'success',
-                            message: `✅ 도메인 ${result.domain}이(가) 성공적으로 등록되었습니다! DNS 전파까지 최대 24시간 소요될 수 있습니다.`
-                        });
-                        
-                        setFormData({
-                            subdomain: '',
-                            extension: extensions[0],
-                            ns1: '',
-                            ns2: '',
-                            email: formData.email
-                        });
-                    } else {
-                        setStatus({
-                            type: 'error',
-                            message: '❌ ' + (result.error || '도메인 등록 실패')
-                        });
-                    }
-                } catch (error) {
-                    console.error('전체 오류:', error);
-                    setStatus({
-                        type: 'error',
-                        message: `❌ 오류 발생: ${error.message}\n\n확인사항:\n1. functions/api/register-domain.js 파일이 있는지 확인\n2. Cloudflare Pages Functions가 활성화되었는지 확인\n3. 브라우저 콘솔(F12)에서 자세한 로그 확인`
-                    });
-                } finally {
-                    setLoading(false);
-                }
-            };
-
-            return (
-                <div className="min-h-screen bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-700 p-4">
-                    <div className="max-w-4xl mx-auto">
-                        <div className="bg-white rounded-3xl shadow-2xl p-8 mb-6">
-                            <div className="text-center mb-8">
-                                <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                                    </svg>
-                                </div>
-                                <h1 className="text-4xl font-bold text-gray-800 mb-2">
-                                    무료 도메인 발급
-                                </h1>
-                                <p className="text-gray-600">
-                                    원하는 서브도메인을 무료로 등록하세요 (무제한 사용)
-                                </p>
-                            </div>
-
-                            {status.message && (
-                                <div className={`mb-6 p-4 rounded-lg flex items-start gap-3 animate-fadeIn ${
-                                    status.type === 'success' ? 'bg-green-50 border-2 border-green-200 text-green-800' :
-                                    status.type === 'error' ? 'bg-red-50 border-2 border-red-200 text-red-800' :
-                                    'bg-blue-50 border-2 border-blue-200 text-blue-800'
-                                }`}>
-                                    {status.type === 'success' ? (
-                                        <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                        </svg>
-                                    ) : status.type === 'error' ? (
-                                        <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                        </svg>
-                                    ) : (
-                                        <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin flex-shrink-0 mt-0.5"></div>
-                                    )}
-                                    <span className="flex-1 whitespace-pre-line">{status.message}</span>
-                                </div>
-                            )}
-
-                            <div className="space-y-6">
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        🌐 도메인 이름
-                                    </label>
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="text"
-                                            name="maindomain"
-                                            value={formData.subdomain}
-                                            onChange={handleInputChange}
-                                            placeholder="mywebsite"
-                                            className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none transition-colors"
-                                            disabled={loading}
-                                        />
-                                        <select
-                                            name="extension"
-                                            value={formData.extension}
-                                            onChange={handleInputChange}
-                                            className="px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none bg-white transition-colors"
-                                            disabled={loading}
-                                        >
-                                            {extensions.map(ext => (
-                                                <option key={ext} value={ext}>{ext}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <p className="mt-2 text-sm text-gray-500">
-                                        📝 미리보기: <span className="font-semibold text-purple-600">{formData.subdomain || 'mywebsite'}{formData.extension}</span>
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        🖥️ 네임서버 1
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="ns1"
-                                        value={formData.ns1}
-                                        onChange={handleInputChange}
-                                        placeholder="ns1.yourhost.com"
-                                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none transition-colors"
-                                        disabled={loading}
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        🖥️ 네임서버 2
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="ns2"
-                                        value={formData.ns2}
-                                        onChange={handleInputChange}
-                                        placeholder="ns2.yourhost.com"
-                                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none transition-colors"
-                                        disabled={loading}
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        📧 이메일 주소
-                                    </label>
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        value={formData.email}
-                                        onChange={handleInputChange}
-                                        placeholder="your@email.com"
-                                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none transition-colors"
-                                        disabled={loading}
-                                    />
-                                </div>
-
-                                <button
-                                    onClick={handleSubmit}
-                                    disabled={loading}
-                                    className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-4 rounded-lg font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {loading ? '등록 중...' : '🚀 도메인 등록하기'}
-                                </button>
-                            </div>
-
-                            <button
-                                onClick={() => setShowInstructions(!showInstructions)}
-                                className="w-full mt-6 text-purple-600 hover:text-purple-800 font-medium transition-colors"
+        <main>
+            <div class="card">
+                <h2>도메인 신청</h2>
+                <form id="domainForm">
+                    <div class="form-group">
+                        <label for="domainName">원하는 도메인 이름</label>
+                        <div class="input-group">
+                            <input 
+                                type="text" 
+                                id="domainName" 
+                                placeholder="mysite" 
+                                pattern="[a-z0-9-]+"
+                                required
                             >
-                                {showInstructions ? '📖 문제 해결 가이드 닫기 ▲' : '📖 문제 해결 가이드 보기 ▼'}
-                            </button>
+                            <select id="domainExtension">
+                                <option value=".com">.com</option>
+                                <option value=".co.kr">.co.kr</option>
+                                <option value=".org">.org</option>
+                            </select>
                         </div>
-
-                        {showInstructions && (
-                            <div className="bg-white rounded-3xl shadow-2xl p-8 mb-6 animate-fadeIn">
-                                <h2 className="text-3xl font-bold text-gray-800 mb-6">🔧 문제 해결 가이드</h2>
-                                
-                                <div className="space-y-6 text-gray-700">
-                                    <div className="bg-red-50 border-2 border-red-200 p-6 rounded-xl">
-                                        <h3 className="text-xl font-bold mb-4 text-red-800">❌ "서버 연결 오류" 해결 방법</h3>
-                                        <ol className="list-decimal list-inside space-y-3 ml-4">
-                                            <li className="font-medium">
-                                                <strong>Functions 폴더 확인</strong>
-                                                <p className="ml-6 mt-1 text-sm">GitHub 저장소에 정확히 이 경로가 있어야 합니다:</p>
-                                                <code className="block ml-6 mt-2 bg-gray-800 text-green-400 p-3 rounded">
-                                                    functions/api/register-domain.js
-                                                </code>
-                                            </li>
-                                            <li className="font-medium">
-                                                <strong>파일명 정확히 확인</strong>
-                                                <ul className="ml-6 mt-2 list-disc text-sm">
-                                                    <li>폴더명: <code className="bg-gray-200 px-1">functions</code> (소문자)</li>
-                                                    <li>하위 폴더: <code className="bg-gray-200 px-1">api</code> (소문자)</li>
-                                                    <li>파일명: <code className="bg-gray-200 px-1">register-domain.js</code> (하이픈 포함)</li>
-                                                </ul>
-                                            </li>
-                                            <li className="font-medium">
-                                                <strong>Cloudflare Pages 재배포</strong>
-                                                <p className="ml-6 mt-1 text-sm">파일 업로드 후 반드시:</p>
-                                                <ul className="ml-6 mt-2 list-disc text-sm">
-                                                    <li>Cloudflare Pages → Deployments</li>
-                                                    <li>"Retry deployment" 또는 새로 커밋</li>
-                                                    <li>배포 로그에서 Functions 빌드 확인</li>
-                                                </ul>
-                                            </li>
-                                            <li className="font-medium">
-                                                <strong>브라우저 콘솔 확인</strong>
-                                                <p className="ml-6 mt-1 text-sm">F12 → Console 탭에서 자세한 오류 확인</p>
-                                            </li>
-                                        </ol>
-                                    </div>
-
-                                    <div className="bg-blue-50 border-2 border-blue-200 p-6 rounded-xl">
-                                        <h3 className="text-xl font-bold mb-4 text-blue-800">✅ 올바른 폴더 구조</h3>
-                                        <pre className="bg-gray-800 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
-{`your-repo/
-├── index.html
-└── functions/
-    └── api/
-        └── register-domain.js`}
-                                        </pre>
-                                    </div>
-
-                                    <div className="bg-yellow-50 border-2 border-yellow-200 p-6 rounded-xl">
-                                        <h3 className="text-xl font-bold mb-4 text-yellow-800">📝 GitHub에서 파일 만들기</h3>
-                                        <ol className="list-decimal list-inside space-y-2 ml-4">
-                                            <li>저장소에서 "Add file" → "Create new file"</li>
-                                            <li>파일명 입력: <code className="bg-yellow-100 px-2 py-1">functions/api/register-domain.js</code></li>
-                                            <li>슬래시(/)를 입력하면 자동으로 폴더가 생성됩니다</li>
-                                            <li>코드 붙여넣기</li>
-                                            <li>"Commit new file" 클릭</li>
-                                        </ol>
-                                    </div>
-
-                                    <div className="bg-green-50 border-2 border-green-200 p-6 rounded-xl">
-                                        <h3 className="text-xl font-bold mb-4 text-green-800">🔍 배포 로그 확인</h3>
-                                        <ol className="list-decimal list-inside space-y-2 ml-4">
-                                            <li>Cloudflare Pages → 프로젝트 선택</li>
-                                            <li>Deployments → 최신 배포 클릭</li>
-                                            <li>"View build log" 확인</li>
-                                            <li>"Functions" 섹션에서 성공 여부 확인</li>
-                                        </ol>
-                                    </div>
-
-                                    <div className="bg-purple-50 border-2 border-purple-200 p-6 rounded-xl">
-                                        <h3 className="text-xl font-bold mb-4 text-purple-800">🆘 여전히 안 되나요?</h3>
-                                        <p className="mb-3">브라우저 콘솔(F12)을 열고 등록 버튼을 눌러보세요.</p>
-                                        <p className="text-sm">Console에 나타나는 에러 메시지를 확인하면 정확한 원인을 찾을 수 있습니다.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {domains.length > 0 && (
-                            <div className="bg-white rounded-3xl shadow-2xl p-8">
-                                <h2 className="text-3xl font-bold text-gray-800 mb-6">🎉 등록된 도메인</h2>
-                                <div className="space-y-4">
-                                    {domains.map((d, idx) => (
-                                        <div key={idx} className="border-2 border-gray-200 rounded-xl p-6 hover:border-purple-300 transition-colors bg-gradient-to-r from-gray-50 to-purple-50">
-                                            <div className="flex items-center justify-between mb-3">
-                                                <span className="text-xl font-bold text-purple-600">{d.domain}</span>
-                                                <span className="px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-semibold">
-                                                    ✓ 활성
-                                                </span>
-                                            </div>
-                                            <div className="text-sm text-gray-600 space-y-2 bg-white p-4 rounded-lg">
-                                                <p><strong>네임서버:</strong> {d.ns1}, {d.ns2}</p>
-                                                <p><strong>이메일:</strong> {d.email}</p>
-                                                <p><strong>등록일:</strong> {new Date(d.createdAt).toLocaleString('ko-KR')}</p>
-                                                {d.ns1RecordId && <p className="text-xs text-gray-400">Record IDs: {d.ns1RecordId}, {d.ns2RecordId}</p>}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        <div className="text-center mt-8 text-white text-sm">
-                            <p>🚀 무료 도메인 발급 서비스 v1.1 | Powered by Cloudflare & GitHub</p>
-                        </div>
+                        <small>영문 소문자, 숫자, 하이픈(-)만 사용 가능</small>
                     </div>
 
-                    <style>{`
-                        @keyframes fadeIn {
-                            from { opacity: 0; transform: translateY(-10px); }
-                            to { opacity: 1; transform: translateY(0); }
-                        }
-                        .animate-fadeIn {
-                            animation: fadeIn 0.3s ease-out;
-                        }
-                    `}</style>
+                    <div class="form-group">
+                        <label for="email">이메일 주소</label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            placeholder="your@email.com" 
+                            required
+                        >
+                        <small>도메인 관리를 위한 이메일입니다</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>네임서버 설정</label>
+                        <input 
+                            type="text" 
+                            id="ns1" 
+                            placeholder="ns1.yourhost.com" 
+                            required
+                        >
+                        <input 
+                            type="text" 
+                            id="ns2" 
+                            placeholder="ns2.yourhost.com" 
+                            required
+                        >
+                        <small>호스팅 업체의 네임서버를 입력하세요</small>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <label>
+                            <input type="checkbox" id="agree" required>
+                            <span>서비스 이용약관에 동의합니다</span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn-primary">도메인 신청하기</button>
+                </form>
+
+                <div id="result" class="result hidden"></div>
+            </div>
+
+            <div class="info-cards">
+                <div class="info-card">
+                    <h3>✅ 무료 & 영구 사용</h3>
+                    <p>기간 제한 없이 영구적으로 사용 가능합니다</p>
                 </div>
-            );
-        }
-        
-        ReactDOM.render(<FreeDomainService />, document.getElementById('root'));
-    </script>
+                <div class="info-card">
+                    <h3>⚡ 즉시 발급</h3>
+                    <p>신청 즉시 도메인이 활성화됩니다</p>
+                </div>
+                <div class="info-card">
+                    <h3>🔧 자유로운 DNS 관리</h3>
+                    <p>원하는 네임서버로 자유롭게 설정</p>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p><a href="dashboard.html">내 도메인 관리</a></p>
+        </footer>
+    </div>
+
+    <script src="js/app.js"></script>
 </body>
-    </html>
+</html>
