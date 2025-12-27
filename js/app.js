@@ -1,5 +1,5 @@
 // API 엔드포인트 설정 (Cloudflare Worker URL로 변경하세요)
-const API_ENDPOINT = 'https://your-worker.workers.dev';
+const API_ENDPOINT = 'https://free-domain-services.jiji15899.workers.dev';
 
 // 도메인 유효성 검사
 function validateDomain(domain) {
