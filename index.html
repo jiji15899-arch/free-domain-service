@@ -3,57 +3,388 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>무료 도메인 제공 플랫폼</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>무료 도메인 서비스</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+        
+        .input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        input[type="text"] {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        select {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            min-width: 150px;
+        }
+        
+        .domain-preview {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .nameserver-group {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .nameserver-input {
+            margin-bottom: 10px;
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .message.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        
+        .info-box h3 {
+            color: #1976D2;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .info-box p {
+            color: #555;
+            line-height: 1.6;
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="container">
-            <div class="logo">FreeDomain</div>
-            <ul class="nav-menu">
-                <li><a href="index.html">홈</a></li>
-                <li><a href="register.html">도메인 등록</a></li>
-                <li><a href="manage.html">도메인 관리</a></li>
-                <li><a href="admin.html">관리자</a></li>
-            </ul>
-        </div>
-    </nav>
-
-    <main class="hero">
-        <div class="container">
-            <h1>무료 도메인을 지금 바로 등록하세요</h1>
-            <p>빠르고 안정적인 무료 도메인 서비스</p>
+    <div class="container">
+        <h1>🌐 무료 도메인 서비스</h1>
+        <p class="subtitle">원하는 서브도메인을 무료로 등록하세요</p>
+        
+        <form id="domainForm">
+            <div class="form-group">
+                <label for="domainName">도메인 이름</label>
+                <div class="input-wrapper">
+                    <input 
+                        type="text" 
+                        id="domainName" 
+                        placeholder="example" 
+                        required
+                        pattern="[a-z0-9-]+"
+                        title="영문 소문자, 숫자, 하이픈(-)만 사용 가능합니다"
+                    >
+                    <select id="extension">
+                        <option value=".yourdomain.com">.yourdomain.com</option>
+                        <option value=".yourdomain.net">.yourdomain.net</option>
+                        <option value=".yourdomain.org">.yourdomain.org</option>
+                    </select>
+                </div>
+                <div class="domain-preview" id="domainPreview">example.yourdomain.com</div>
+            </div>
             
-            <div class="search-box">
-                <input type="text" id="domainSearch" placeholder="원하시는 도메인을 입력하세요 (예: mysite)">
-                <select id="extensionSelect">
-                    <option value=".com">.com</option>
-                    <option value=".org">.org</option>
-                    <option value=".net">.net</option>
-                    <option value=".co.kr">.co.kr</option>
-                </select>
-                <button onclick="searchDomain()">검색</button>
+            <div class="nameserver-group">
+                <label>네임서버 설정 (최소 2개)</label>
+                <div class="nameserver-input">
+                    <input 
+                        type="text" 
+                        id="ns1" 
+                        placeholder="ns1.example.com"
+                        required
+                    >
+                </div>
+                <div class="nameserver-input">
+                    <input 
+                        type="text" 
+                        id="ns2" 
+                        placeholder="ns2.example.com"
+                        required
+                    >
+                </div>
+                <div class="nameserver-input">
+                    <input 
+                        type="text" 
+                        id="ns3" 
+                        placeholder="ns3.example.com (선택)"
+                    >
+                </div>
+                <div class="nameserver-input">
+                    <input 
+                        type="text" 
+                        id="ns4" 
+                        placeholder="ns4.example.com (선택)"
+                    >
+                </div>
             </div>
-
-            <div id="searchResult" class="search-result"></div>
-
-            <div class="features">
-                <div class="feature-card">
-                    <h3>🚀 즉시 발급</h3>
-                    <p>신청 즉시 도메인 사용 가능</p>
-                </div>
-                <div class="feature-card">
-                    <h3>♾️ 무제한 사용</h3>
-                    <p>기간 제한 없이 평생 사용</p>
-                </div>
-                <div class="feature-card">
-                    <h3>⚙️ 자유로운 설정</h3>
-                    <p>네임서버 및 DNS 설정 가능</p>
-                </div>
-            </div>
+            
+            <button type="submit" id="submitBtn">도메인 등록하기</button>
+        </form>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px; color: #666;">처리 중...</p>
         </div>
-    </main>
+        
+        <div class="message" id="message"></div>
+        
+        <div class="info-box">
+            <h3>📋 사용 방법</h3>
+            <p>
+                1. 원하는 도메인 이름을 입력하세요<br>
+                2. 확장자를 선택하세요<br>
+                3. 네임서버 주소를 입력하세요 (최소 2개)<br>
+                4. 등록 버튼을 클릭하세요<br>
+                5. 등록 완료 후 네임서버에서 DNS 설정을 하세요
+            </p>
+        </div>
+    </div>
 
-    <script src="app.js"></script>
+    <script>
+        const domainNameInput = document.getElementById('domainName');
+        const extensionSelect = document.getElementById('extension');
+        const domainPreview = document.getElementById('domainPreview');
+        const form = document.getElementById('domainForm');
+        const message = document.getElementById('message');
+        const loading = document.getElementById('loading');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // 도메인 미리보기 업데이트
+        function updatePreview() {
+            const name = domainNameInput.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+            const ext = extensionSelect.value;
+            domainPreview.textContent = (name || 'example') + ext;
+        }
+
+        domainNameInput.addEventListener('input', updatePreview);
+        extensionSelect.addEventListener('change', updatePreview);
+
+        // 메시지 표시
+        function showMessage(text, type) {
+            message.textContent = text;
+            message.className = `message ${type} show`;
+            setTimeout(() => {
+                message.classList.remove('show');
+            }, 5000);
+        }
+
+        // 폼 제출
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const domainName = domainNameInput.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+            const extension = extensionSelect.value;
+            const fullDomain = domainName + extension;
+            
+            const nameservers = [
+                document.getElementById('ns1').value.trim(),
+                document.getElementById('ns2').value.trim(),
+                document.getElementById('ns3').value.trim(),
+                document.getElementById('ns4').value.trim()
+            ].filter(ns => ns !== '');
+
+            if (nameservers.length < 2) {
+                showMessage('네임서버를 최소 2개 이상 입력해주세요.', 'error');
+                return;
+            }
+
+            // 네임서버 형식 검증
+            const nsPattern = /^([a-z0-9-]+\.)+[a-z]{2,}$/i;
+            for (const ns of nameservers) {
+                if (!nsPattern.test(ns)) {
+                    showMessage(`잘못된 네임서버 형식: ${ns}`, 'error');
+                    return;
+                }
+            }
+
+            loading.classList.add('show');
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        domain: fullDomain,
+                        nameservers: nameservers
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage(`✅ ${fullDomain} 도메인이 성공적으로 등록되었습니다!`, 'success');
+                    form.reset();
+                    updatePreview();
+                } else {
+                    showMessage(`❌ 등록 실패: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`❌ 오류 발생: ${error.message}`, 'error');
+            } finally {
+                loading.classList.remove('show');
+                submitBtn.disabled = false;
+            }
+        });
+
+        // 초기 미리보기 설정
+        updatePreview();
+    </script>
 </body>
-</html>
+    </html>
