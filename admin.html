@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 - FreeDomain</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">FreeDomain</div>
+            <ul class="nav-menu">
+                <li><a href="index.html">홈</a></li>
+                <li><a href="register.html">도메인 등록</a></li>
+                <li><a href="manage.html">도메인 관리</a></li>
+                <li><a href="admin.html" class="active">관리자</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container" style="margin-top: 100px;">
+        <div id="loginSection">
+            <div class="admin-login">
+                <h2>관리자 로그인</h2>
+                <input type="password" id="adminPassword" placeholder="관리자 비밀번호">
+                <button onclick="adminLogin()" class="btn-primary">로그인</button>
+            </div>
+        </div>
+
+        <div id="adminPanel" style="display: none;">
+            <h2>관리자 패널</h2>
+            
+            <div class="admin-stats">
+                <div class="stat-card">
+                    <h3>전체 도메인</h3>
+                    <p id="totalDomains">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>오늘 등록</h3>
+                    <p id="todayDomains">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>활성 도메인</h3>
+                    <p id="activeDomains">0</p>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h3>확장자 관리</h3>
+                <div id="extensionList"></div>
+                <div class="add-extension">
+                    <input type="text" id="newExtension" placeholder="새 확장자 (예: .myext)">
+                    <button onclick="addExtension()" class="btn-secondary">확장자 추가</button>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h3>기본 네임서버 설정</h3>
+                <input type="text" id="defaultNS1" placeholder="ns1.yourdomain.com">
+                <input type="text" id="defaultNS2" placeholder="ns2.yourdomain.com">
+                <button onclick="updateDefaultNameservers()" class="btn-primary">저장</button>
+            </div>
+
+            <div class="admin-section">
+                <h3>전체 도메인 목록</h3>
+                <input type="text" id="searchDomain" placeholder="도메인 검색" onkeyup="searchAllDomains()">
+                <div id="allDomainsList"></div>
+            </div>
+
+            <div class="admin-section">
+                <h3>시스템 설정</h3>
+                <label>
+                    <input type="checkbox" id="allowRegistration" checked>
+                    <span>새 도메인 등록 허용</span>
+                </label>
+                <br>
+                <label>
+                    <input type="checkbox" id="requireApproval">
+                    <span>관리자 승인 필요</span>
+                </label>
+                <br>
+                <button onclick="saveSystemSettings()" class="btn-primary">설정 저장</button>
+            </div>
+
+            <div class="admin-section">
+                <h3>데이터 관리</h3>
+                <button onclick="exportData()" class="btn-secondary">데이터 내보내기</button>
+                <button onclick="importData()" class="btn-secondary">데이터 가져오기</button>
+                <input type="file" id="importFile" style="display:none" accept=".json">
+            </div>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
