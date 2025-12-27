@@ -52,11 +52,11 @@ async function handleRequest(request) {
         success: false,
         message: '환경 변수가 설정되지 않았습니다. Worker Settings > Variables에서 설정하세요.',
         missing: {
-          CF_API_TOKEN: !CF_API_TOKEN,
-          CF_ZONE_ID: !CF_ZONE_ID,
-          GITHUB_TOKEN: !GITHUB_TOKEN,
-          GITHUB_REPO: !GITHUB_REPO,
-          ALLOWED_EXTENSIONS: !ALLOWED_EXTENSIONS
+          CF_API_TOKEN: typeof CF_API_TOKEN === 'undefined',
+          CF_ZONE_ID: typeof CF_ZONE_ID === 'undefined',
+          GITHUB_TOKEN: typeof GITHUB_TOKEN === 'undefined',
+          GITHUB_REPO: typeof GITHUB_REPO === 'undefined',
+          ALLOWED_EXTENSIONS: typeof ALLOWED_EXTENSIONS === 'undefined'
         }
       }, 500);
     }
@@ -413,8 +413,9 @@ async function deleteCloudflareNS(domain) {
 // ==========================================
 async function getDomainsFromGitHub() {
   try {
+    // [수정됨] domains/domains.json -> domains.json (루트 경로 사용)
     const response = await fetch(
-      `https://api.github.com/repos/${GITHUB_REPO}/contents/domains/domains.json`,
+      `https://api.github.com/repos/${GITHUB_REPO}/contents/domains.json`,
       {
         headers: {
           'Authorization': `token ${GITHUB_TOKEN}`,
@@ -435,7 +436,10 @@ async function getDomainsFromGitHub() {
     }
 
     const data = await response.json();
-    const content = atob(data.content.replace(/\s/g, ''));
+    // GitHub content는 base64로 인코딩 되어있음.
+    // atob로 디코딩 할 때 한글 깨짐 방지를 위해 decodeURIComponent 사용 권장되지만
+    // 기존 로직 유지하되 안전하게 처리
+    const content = decodeURIComponent(escape(atob(data.content.replace(/\s/g, ''))));
     return JSON.parse(content);
   } catch (error) {
     console.error('Error fetching from GitHub:', error);
@@ -451,8 +455,9 @@ async function saveDomainsToGitHub(domains) {
     let sha = null;
     
     // 기존 파일 SHA 가져오기
+    // [수정됨] domains/domains.json -> domains.json
     const getResponse = await fetch(
-      `https://api.github.com/repos/${GITHUB_REPO}/contents/domains/domains.json`,
+      `https://api.github.com/repos/${GITHUB_REPO}/contents/domains.json`,
       {
         headers: {
           'Authorization': `token ${GITHUB_TOKEN}`,
@@ -467,11 +472,11 @@ async function saveDomainsToGitHub(domains) {
       sha = data.sha;
     }
 
-    // 파일 업데이트 또는 생성
+    // 파일 업데이트 또는 생성 (한글 깨짐 방지를 위한 인코딩 수정)
     const content = btoa(unescape(encodeURIComponent(JSON.stringify(domains, null, 2))));
     
     const response = await fetch(
-      `https://api.github.com/repos/${GITHUB_REPO}/contents/domains/domains.json`,
+      `https://api.github.com/repos/${GITHUB_REPO}/contents/domains.json`,
       {
         method: 'PUT',
         headers: {
@@ -507,4 +512,4 @@ function jsonResponse(data, status = 200) {
     status: status,
     headers: CORS_HEADERS
   });
-      }
+}
