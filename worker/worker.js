@@ -47,7 +47,9 @@ async function handleRequest(request) {
     }
 
     // 환경 변수 필수 체크
-    if (!CF_API_TOKEN || !CF_ZONE_ID || !GITHUB_TOKEN || !GITHUB_REPO || !ALLOWED_EXTENSIONS) {
+    if (typeof CF_API_TOKEN === 'undefined' || typeof CF_ZONE_ID === 'undefined' || 
+        typeof GITHUB_TOKEN === 'undefined' || typeof GITHUB_REPO === 'undefined' || 
+        typeof ALLOWED_EXTENSIONS === 'undefined') {
       return jsonResponse({
         success: false,
         message: '환경 변수가 설정되지 않았습니다. Worker Settings > Variables에서 설정하세요.',
@@ -413,7 +415,7 @@ async function deleteCloudflareNS(domain) {
 // ==========================================
 async function getDomainsFromGitHub() {
   try {
-    // [수정됨] domains/domains.json -> domains.json (루트 경로 사용)
+    // [수정 2] domains/domains.json -> domains.json (경로 수정)
     const response = await fetch(
       `https://api.github.com/repos/${GITHUB_REPO}/contents/domains.json`,
       {
@@ -426,7 +428,6 @@ async function getDomainsFromGitHub() {
     );
 
     if (response.status === 404) {
-      // 파일이 없으면 빈 배열 반환
       return [];
     }
 
@@ -436,9 +437,7 @@ async function getDomainsFromGitHub() {
     }
 
     const data = await response.json();
-    // GitHub content는 base64로 인코딩 되어있음.
-    // atob로 디코딩 할 때 한글 깨짐 방지를 위해 decodeURIComponent 사용 권장되지만
-    // 기존 로직 유지하되 안전하게 처리
+    // [수정 3] 한글 깨짐 방지를 위한 디코딩
     const content = decodeURIComponent(escape(atob(data.content.replace(/\s/g, ''))));
     return JSON.parse(content);
   } catch (error) {
@@ -454,8 +453,7 @@ async function saveDomainsToGitHub(domains) {
   try {
     let sha = null;
     
-    // 기존 파일 SHA 가져오기
-    // [수정됨] domains/domains.json -> domains.json
+    // [수정 2] 경로 수정
     const getResponse = await fetch(
       `https://api.github.com/repos/${GITHUB_REPO}/contents/domains.json`,
       {
@@ -472,7 +470,7 @@ async function saveDomainsToGitHub(domains) {
       sha = data.sha;
     }
 
-    // 파일 업데이트 또는 생성 (한글 깨짐 방지를 위한 인코딩 수정)
+    // [수정 3] 한글 깨짐 방지를 위한 인코딩
     const content = btoa(unescape(encodeURIComponent(JSON.stringify(domains, null, 2))));
     
     const response = await fetch(
@@ -513,3 +511,4 @@ function jsonResponse(data, status = 200) {
     headers: CORS_HEADERS
   });
 }
+// [수정 1] 여기에 있던 불필요한 '}' 삭제됨
