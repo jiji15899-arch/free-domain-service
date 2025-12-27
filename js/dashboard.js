@@ -1,5 +1,5 @@
 // API 엔드포인트 설정
-const API_ENDPOINT = 'https://your-worker.workers.dev';
+const API_ENDPOINT = 'https://free-domain-services.jiji15899.workers.dev';
 
 let currentEmail = '';
 
