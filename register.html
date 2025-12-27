@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>도메인 등록 - FreeDomain</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">FreeDomain</div>
+            <ul class="nav-menu">
+                <li><a href="index.html">홈</a></li>
+                <li><a href="register.html" class="active">도메인 등록</a></li>
+                <li><a href="manage.html">도메인 관리</a></li>
+                <li><a href="admin.html">관리자</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container" style="margin-top: 100px;">
+        <div class="register-form">
+            <h2>도메인 등록</h2>
+            
+            <div class="form-group">
+                <label for="domainName">도메인 이름</label>
+                <div class="input-with-extension">
+                    <input type="text" id="domainName" placeholder="원하는 도메인 입력 (예: mysite)" required>
+                    <select id="extension">
+                        <option value=".com">.com</option>
+                        <option value=".org">.org</option>
+                        <option value=".net">.net</option>
+                        <option value=".co.kr">.co.kr</option>
+                    </select>
+                </div>
+                <button onclick="checkAvailability()" class="btn-secondary">사용 가능 여부 확인</button>
+                <div id="availabilityResult"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="ownerEmail">소유자 이메일</label>
+                <input type="email" id="ownerEmail" placeholder="your@email.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="ownerName">소유자 이름</label>
+                <input type="text" id="ownerName" placeholder="홍길동" required>
+            </div>
+
+            <div class="form-group">
+                <label>네임서버 설정</label>
+                <div class="nameserver-option">
+                    <input type="radio" name="nsOption" value="default" id="defaultNS" checked>
+                    <label for="defaultNS">기본 네임서버 사용</label>
+                </div>
+                <div class="nameserver-option">
+                    <input type="radio" name="nsOption" value="custom" id="customNS">
+                    <label for="customNS">커스텀 네임서버 사용</label>
+                </div>
+            </div>
+
+            <div id="customNSFields" style="display: none;">
+                <div class="form-group">
+                    <label for="ns1">네임서버 1</label>
+                    <input type="text" id="ns1" placeholder="ns1.example.com">
+                </div>
+                <div class="form-group">
+                    <label for="ns2">네임서버 2</label>
+                    <input type="text" id="ns2" placeholder="ns2.example.com">
+                </div>
+                <div class="form-group">
+                    <label for="ns3">네임서버 3 (선택)</label>
+                    <input type="text" id="ns3" placeholder="ns3.example.com">
+                </div>
+                <div class="form-group">
+                    <label for="ns4">네임서버 4 (선택)</label>
+                    <input type="text" id="ns4" placeholder="ns4.example.com">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="agreeTerms" required>
+                    <span>이용약관 및 개인정보 처리방침에 동의합니다</span>
+                </label>
+            </div>
+
+            <button onclick="registerDomain()" class="btn-primary">도메인 등록하기</button>
+        </div>
+
+        <div id="registrationResult" class="result-box"></div>
+    </main>
+
+    <script src="app.js"></script>
+    <script>
+        // 네임서버 옵션 토글
+        document.querySelectorAll('input[name="nsOption"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                document.getElementById('customNSFields').style.display = 
+                    this.value === 'custom' ? 'block' : 'none';
+            });
+        });
+    </script>
+</body>
+</html>
