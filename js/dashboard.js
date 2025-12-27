@@ -1,4 +1,4 @@
-// API 엔드포인트 설정
+// ⚠️ 여기를 본인의 Worker URL로 변경하세요!
 const API_ENDPOINT = 'https://free-domain-services.jiji15899.workers.dev';
 
 let currentEmail = '';
@@ -16,7 +16,17 @@ document.getElementById('searchForm').addEventListener('submit', async (e) => {
     
     try {
         const response = await fetch(`${API_ENDPOINT}/domains?email=${encodeURIComponent(email)}`);
-        const data = await response.json();
+        const responseText = await response.text();
+        
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (jsonError) {
+            console.error('JSON Parse Error:', jsonError);
+            console.error('Response:', responseText);
+            alert('서버 응답 형식이 올바르지 않습니다. Worker를 확인해주세요.');
+            return;
+        }
         
         if (response.ok && data.success && data.domains.length > 0) {
             displayDomains(data.domains);
@@ -25,7 +35,7 @@ document.getElementById('searchForm').addEventListener('submit', async (e) => {
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('서버 연결에 실패했습니다.');
+        alert(`서버 연결에 실패했습니다.\n\n${error.message}\n\nWorker URL을 확인해주세요: ${API_ENDPOINT}`);
     } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = '조회하기';
@@ -122,7 +132,8 @@ document.getElementById('editForm').addEventListener('submit', async (e) => {
             })
         });
         
-        const data = await response.json();
+        const responseText = await response.text();
+        const data = JSON.parse(responseText);
         
         if (response.ok && data.success) {
             alert('도메인이 성공적으로 업데이트되었습니다.');
@@ -135,7 +146,7 @@ document.getElementById('editForm').addEventListener('submit', async (e) => {
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('서버 연결에 실패했습니다.');
+        alert(`서버 연결에 실패했습니다.\n\n${error.message}`);
     } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = '업데이트';
@@ -160,7 +171,8 @@ async function deleteDomain(domain) {
             })
         });
         
-        const data = await response.json();
+        const responseText = await response.text();
+        const data = JSON.parse(responseText);
         
         if (response.ok && data.success) {
             alert('도메인이 성공적으로 삭제되었습니다.');
@@ -172,6 +184,6 @@ async function deleteDomain(domain) {
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('서버 연결에 실패했습니다.');
+        alert(`서버 연결에 실패했습니다.\n\n${error.message}`);
     }
-}
+    }
